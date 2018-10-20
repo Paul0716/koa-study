@@ -1,0 +1,141 @@
+doctype html
+title Post List
+style.
+	#app {
+		margin: 0;
+		padding: 0;
+		font-size: 16px;
+	}
+	.card {
+		height: 140px;
+		background-color: white;
+		padding: 5px;
+		margin-bottom: 10px;
+		font-family: Helvetica;
+		box-shadow: 0px 3px 8px 0px rgba(0,0,0,0.5);
+	}
+	.card__content h3 {
+		margin: 0;
+	}
+	.hint {
+		color: red
+	}
+script(src="https://code.jquery.com/jquery-3.3.1.min.js")
+body
+	div#app
+		- for (var x = 0; x < data.length; x++)
+			div.card 
+				div.card_content
+					h3 #{data[x].name}
+					p.hint #{x}
+
+
+script.
+	const layoutCount = 200;
+	const cardHeight = 160;
+	const targetCount = layoutCount / 2;
+	const idList = Array.apply(null, Array(targetCount)).map(function (_, i) {return i;});
+
+	function debounce(fn, delay) {
+		// 定时器，用来 setTimeout
+		var timer
+
+		// 返回一个函数，这个函数会在一个时间区间结束后的 delay 毫秒时执行 fn 函数
+
+		return function () {
+			// 保存函数调用时的上下文和参数，传递给 fn
+			var context = this
+			var args = arguments
+			// 每次这个返回的函数被调用，就清除定时器，以保证不执行 fn
+			clearTimeout(timer)
+
+			// 当返回的函数被最后一次调用后（也就是用户停止了某个连续的操作），
+			// 再过 delay 毫秒就执行 fn
+			timer = setTimeout(function () {
+				fn.apply(context, args)
+			}, delay)
+		}
+	}
+
+
+	$(document).ready(function() {
+		const $children = $(".card");
+		const app = document.getElementById("app");
+
+		function init() {
+			console.log(`init ${app.childElementCount}`);
+			while(app.childElementCount > layoutCount) {
+				app.removeChild(app.lastElementChild);
+			}
+			
+		}
+		init();
+		
+		
+		const clamp = function(min, max) {
+			return function(value) {
+				return Math.min(Math.max(min, value), max);
+			};
+		}
+		
+		$(window).scroll(function() {
+			const scrollPosition = $(window).scrollTop();
+			$(".card").each(function(index, o) {
+				
+				const positionY = index * cardHeight;
+				const deltaY = positionY - scrollPosition;
+				const dY = clamp(-cardHeight, 0)(deltaY);
+				const dissapearingValue = (dY / cardHeight) + 1;
+				const zValue = dY / cardHeight * 50;
+				const yValue = dY / cardHeight * -20;
+				const style = {
+					opacity: dissapearingValue,
+					transform: `perspective(200px) translate3d(0,${yValue}px, ${zValue}px)`
+				}
+				$(o).css(style);
+			});
+		});
+
+		//- console.log("document ready.", $children)
+		const scrollOffset = 0;
+		$(window).bind('mousewheel', function(e) {
+			const scrollPosition = $(window).scrollTop();
+			if (
+				Math.abs(e.originalEvent.wheelDelta) > 10
+			) {				
+				//- scroll down				
+				if (
+					e.originalEvent.wheelDelta < 0 && 
+					scrollPosition > layoutCount / 3 * cardHeight
+				) {
+					const insertIndex = idList[idList.length-1]+1;
+					if(
+						$children[insertIndex] &&
+						insertIndex < layoutCount
+					) {
+						
+						app.appendChild($children[insertIndex]);
+						idList.push(insertIndex);
+						app.removeChild(app.firstElementChild);
+						idList.splice(0, 1);
+					}
+				}
+				//- scroll down up
+				if (
+					e.originalEvent.wheelDelta >= 0 && 
+					scrollPosition < layoutCount * 2 / 3 * cardHeight
+				) {
+					//- const insertIndex = idList[idList.length-1]+1;
+					if (idList[0]) {
+						app.removeChild(app.lastElementChild);
+						idList.splice(idList.length-1, 1);
+
+						app.prepend($children[idList[0]]);
+						idList.splice(0, 0, idList[0] - 1);
+					}					
+				}
+				//- console.log(`length: ${idList.length}, first: ${idList[0]}, last: ${idList[idList.length]}`, idList);
+				console.log(idList);
+			}
+		});
+	});

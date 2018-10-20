@@ -1,0 +1,21 @@
+{
+  "name": "koa-study",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon ./**.js"
+  },
+  "dependencies": {
+    "babel-register": "^6.26.0",
+    "koa": "^2.5.2",
+    "koa-jade": "^2.1.0",
+    "koa-router": "^7.4.0",
+    "koa-views": "^6.1.4",
+    "nodemon": "^1.18.3"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "dreamjs": "^0.1.8"
+  }
+}
